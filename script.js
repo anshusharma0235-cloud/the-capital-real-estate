@@ -94,23 +94,43 @@
     }
   });
 
-  // Prepare a Gmail/email draft. The user's browser opens their configured mail app; no data is stored here.
-  const form = document.getElementById('contactForm');
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (!form.reportValidity()) return;
-    const data = new FormData(form);
-    const subject = `Property enquiry from ${data.get('name') || 'Website visitor'}`;
-    const body = [
-      `Name: ${data.get('name') || ''}`,
-      `Phone: ${data.get('phone') || ''}`,
-      `Visitor email: ${data.get('email') || ''}`,
-      `Interested in: ${data.get('interest') || ''}`,
-      `Message: ${data.get('message') || ''}`
-    ].join('\n');
-    window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    showToast('Opening your email app to prepare the enquiry.');
-  });
+ // Submit property enquiries to Netlify Forms.
+const form = document.getElementById('contactForm');
+
+form?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (!form.reportValidity()) return;
+
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = 'Sending...';
+  }
+
+  try {
+    const formData = new FormData(form);
+    formData.set('form-name', 'property-enquiry');
+
+    const response = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(formData).toString()
+    });
+
+    if (!response.ok) throw new Error('Submission failed');
+
+    form.reset();
+    showToast('Thank you! Your enquiry has been submitted.');
+  } catch (error) {
+    showToast('Enquiry could not be submitted. Please contact us on WhatsApp.');
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Prepare enquiry ↗';
+    }
+  }
+});
 
   // Drag floating contact buttons with mouse or touch. Tap/click still activates the button.
   document.querySelectorAll('.drag-handle').forEach(button => {
