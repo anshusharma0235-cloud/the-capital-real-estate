@@ -154,3 +154,35 @@ button.gemini span:last-child{font-size:9px;font-weight:900;line-height:1}
     margin: 0;
   }
 }
+
+
+/* Correct desktop placement: contact information left, enquiry form right */
+@media (min-width: 901px) {
+  .contact {
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    align-items: center;
+  }
+
+  .contact > div {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .contact > form#contactForm {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    width: 100%;
+    max-width: 620px;
+    margin-left: auto;
+  }
+}
+
+/* Keep the contact form readable on tablet and mobile */
+@media (max-width: 900px) {
+  .contact > div,
+  .contact > form#contactForm {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
