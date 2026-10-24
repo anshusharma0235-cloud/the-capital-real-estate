@@ -104,3 +104,53 @@ button.gemini span:last-child{font-size:9px;font-weight:900;line-height:1}
 .gemini-quick button:hover{background:#3b3321}
 @media(max-width:900px){.servicegrid article{min-height:320px}.service-visual{height:125px}}
 @media(max-width:650px){.servicegrid article{min-height:0;padding-bottom:22px}.service-visual{height:140px}.servicegrid p{min-height:0}.servicegrid article,.servicegrid article:first-child,.servicegrid article:nth-child(3){border-left:0;border-right:0;border-bottom:1px solid var(--line)}button.wa.drag-handle{left:14px;bottom:14px;width:62px;height:62px;min-width:62px;min-height:62px}button.wa svg{width:30px;height:30px}button.gemini.drag-handle{right:14px;bottom:14px;width:62px;height:62px;min-width:62px;min-height:62px}}
+
+
+/* Final layout fix: keep the enquiry form on the right on desktop */
+@media (min-width: 901px) {
+  .contact {
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    gap: clamp(32px, 5vw, 75px);
+    align-items: center;
+  }
+
+  .contact > div {
+    min-width: 0;
+  }
+
+  form#contactForm {
+    width: 100%;
+    max-width: 620px;
+    justify-self: end;
+    margin: 0 0 0 auto;
+  }
+}
+
+/* Tablet: balanced two-column layout */
+@media (min-width: 651px) and (max-width: 900px) {
+  .contact {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 28px;
+    align-items: start;
+  }
+
+  form#contactForm {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+}
+
+/* Mobile: stack text and form, with form full-width */
+@media (max-width: 650px) {
+  .contact {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 30px;
+  }
+
+  form#contactForm {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+}
