@@ -186,7 +186,6 @@ button.gemini span:last-child{font-size:9px;font-weight:900;line-height:1}
     grid-row: auto;
   }
 }
-```css
 /* Mobile responsive fixes */
 @media (max-width: 600px) {
   #cards {
