@@ -1,0 +1,16 @@
+{
+  "name": "the-capital-real-estate",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Capital Real Estate website with a secure Gemini property assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
