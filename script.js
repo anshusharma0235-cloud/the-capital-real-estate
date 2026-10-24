@@ -7,10 +7,8 @@
     toast.classList.add('show');
     window.setTimeout(() => toast.classList.remove('show'), 3200);
   };
-  const phone = String(cfg.whatsappNumber || '918340712432').replace(/\D/g, '');
-  const email = cfg.contactEmail || 'realestatethecapital01@gmail.com';
-  const geminiUrl = cfg.geminiUrl || 'https://gemini.google.com/app';
 
+  const phone = String(cfg.whatsappNumber || '918340712432').replace(/\D/g, '');
   document.getElementById('year')?.replaceChildren(document.createTextNode(String(new Date().getFullYear())));
 
   // Mobile navigation.
@@ -23,10 +21,10 @@
   const cards = [...document.querySelectorAll('#cards .card')];
   document.querySelectorAll('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
     document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b === btn));
-    const f = btn.dataset.filter;
+    const filter = btn.dataset.filter;
     let shown = 0;
     cards.forEach(card => {
-      const show = f === 'all' || card.dataset.purpose === f;
+      const show = filter === 'all' || card.dataset.purpose === filter;
       card.hidden = !show;
       if (show) shown++;
     });
@@ -35,13 +33,15 @@
   }));
 
   const openWhatsApp = (message) => {
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank', 'noopener,noreferrer');
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   };
+
   document.querySelectorAll('.enquire').forEach(btn => btn.addEventListener('click', () => {
     openWhatsApp(`Hello The Capital Real Estate, I am interested in: ${btn.dataset.name || 'a property'}. Please share details.`);
   }));
   document.getElementById('wa')?.addEventListener('click', () => openWhatsApp('Hello The Capital Real Estate, I would like to enquire about a property.'));
+
+  // Gemini chat panel.
   const geminiPanel = document.getElementById('geminiPanel');
   document.getElementById('gemini')?.addEventListener('click', () => {
     if (geminiPanel) geminiPanel.hidden = !geminiPanel.hidden;
@@ -53,6 +53,7 @@
     const input = document.getElementById('geminiInput');
     if (input) { input.value = btn.dataset.prompt || ''; input.focus(); }
   }));
+
   const chatHistory = [];
   const addChatMessage = (text, role) => {
     const messages = document.getElementById('geminiMessages');
@@ -64,29 +65,32 @@
     messages.scrollTop = messages.scrollHeight;
     return node;
   };
+
   document.getElementById('geminiForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const input = document.getElementById('geminiInput');
     const send = document.querySelector('#geminiForm button[type="submit"]');
     const question = (input?.value || '').trim();
     if (!question) return;
+
     addChatMessage(question, 'user');
     chatHistory.push({ role: 'user', text: question });
     input.value = '';
     if (send) { send.disabled = true; send.textContent = '…'; }
     const pending = addChatMessage('Thinking…', 'assistant');
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: chatHistory.slice(-12) })
+        body: JSON.stringify({ messages: chatHistory.slice(-10) })
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || 'Assistant is not available right now.');
+      if (!response.ok) throw new Error(result.error || 'The assistant is unavailable right now.');
       if (pending) pending.textContent = result.reply || 'I could not generate a reply. Please try again.';
       chatHistory.push({ role: 'assistant', text: result.reply || '' });
     } catch (err) {
-      if (pending) pending.textContent = `${err.message} If you are testing by opening index.html directly, run the website through the Node server or deploy it on Render.`;
+      if (pending) pending.textContent = `${err.message} Please try again in a moment or contact us on WhatsApp.`;
       chatHistory.pop();
     } finally {
       if (send) { send.disabled = false; send.textContent = 'Send'; }
@@ -94,45 +98,36 @@
     }
   });
 
- // Submit property enquiries to Netlify Forms.
-const form = document.getElementById('contactForm');
+  // Submit property enquiries to the Render backend.
+  const form = document.getElementById('contactForm');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
 
-form?.addEventListener('submit', async (e) => {
-  e.preventDefault();
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Sending...'; }
 
-  if (!form.reportValidity()) return;
+    try {
+      const data = new FormData(form);
+      const payload = Object.fromEntries(data.entries());
+      const response = await fetch('/api/enquiry', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Enquiry could not be submitted.');
 
-  const submitButton = form.querySelector('button[type="submit"]');
-  if (submitButton) {
-    submitButton.disabled = true;
-    submitButton.textContent = 'Sending...';
-  }
-
-  try {
-    const formData = new FormData(form);
-    formData.set('form-name', 'property-enquiry');
-
-    const response = await fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(formData).toString()
-    });
-
-    if (!response.ok) throw new Error('Submission failed');
-
-    form.reset();
-    showToast('Thank you! Your enquiry has been submitted.');
-  } catch (error) {
-    showToast('Enquiry could not be submitted. Please contact us on WhatsApp.');
-  } finally {
-    if (submitButton) {
-      submitButton.disabled = false;
-      submitButton.textContent = 'Prepare enquiry ↗';
+      form.reset();
+      showToast(result.message || 'Thank you! Your enquiry has been sent.');
+    } catch (error) {
+      showToast(error.message || 'Enquiry could not be submitted. Please contact us on WhatsApp.');
+    } finally {
+      if (submitButton) { submitButton.disabled = false; submitButton.textContent = 'Prepare enquiry ↗'; }
     }
-  }
-});
+  });
 
-  // Drag floating contact buttons with mouse or touch. Tap/click still activates the button.
+  // Drag floating contact buttons with mouse or touch.
   document.querySelectorAll('.drag-handle').forEach(button => {
     let startX = 0, startY = 0, originX = 0, originY = 0, moved = false;
     button.addEventListener('pointerdown', (e) => {
