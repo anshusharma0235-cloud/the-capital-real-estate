@@ -1,0 +1,35 @@
+THE CAPITAL REAL ESTATE — RENDER DEPLOYMENT
+
+Upload/replace these files in the ROOT of the existing GitHub repository:
+- server.js
+- package.json
+- script.js
+
+Do not delete index.html, styles.css, config.js, capital-logo.png, or README.md.
+Keep netlify/functions/chat.js if you still want the old Netlify function available.
+
+Render Web Service:
+- Repository: anshusharma0235-cloud/the-capital-real-estate
+- Branch: main
+- Runtime: Node
+- Root Directory: blank
+- Build Command: npm install
+- Start Command: npm start
+- Choose Free if available and appropriate.
+
+Required Render Environment Variables:
+1. GEMINI_API_KEY = your Google AI Studio key
+2. SMTP_HOST = SMTP server hostname from your email provider
+3. SMTP_PORT = usually 465 or 587, as provided by your email provider
+4. SMTP_USER = SMTP account username/email
+5. SMTP_PASS = SMTP password or app password supplied by your email provider
+6. ENQUIRY_TO_EMAIL = inbox that should receive enquiries
+
+Email delivery will NOT work until valid SMTP values are configured. Do not commit secrets to GitHub.
+For Gmail SMTP, use smtp.gmail.com, port 465 (SSL) or 587 (STARTTLS), and an app password if your Google account supports it. Do not use your regular account password.
+
+After deployment:
+- Open https://YOUR-RENDER-URL/health and confirm {"ok":true}
+- Test Gemini chat.
+- Test enquiry form only after SMTP settings are added.
+- Render free services may sleep after inactivity; first request can take a while.
